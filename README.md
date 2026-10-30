@@ -1,8 +1,10 @@
 # 月度结算数据汇总
 
+[在线使用月度结算助手](https://lyming77-monthly-electricity-settlement-streamlit-app-nurdrc.streamlit.app/)
+
 上传现有的年度分析表和当月结算单，核对变更后生成更新后的 Excel。下一次使用时，上传上一次下载保存的分析表。
 
-本目录可作为独立 GitHub 仓库部署到 Streamlit Community Cloud。运行环境使用 Python 3.12，入口为 `streamlit_app.py`。依赖固定为 Streamlit 1.66.1；这是截至 2026-10-29 核验的[官方最新稳定发行版](https://github.com/streamlit/streamlit/releases/tag/1.66.1)。
+本目录可作为独立 GitHub 仓库部署到 Streamlit Community Cloud。当前线上运行环境使用 Python 3.14，入口为 `streamlit_app.py`。依赖固定为 Streamlit 1.66.1；这是截至 2026-10-29 核验的[官方最新稳定发行版](https://github.com/streamlit/streamlit/releases/tag/1.66.1)。
 
 ## 每月使用
 
@@ -18,7 +20,7 @@
 1. 在自己的 GitHub 账号下新建一个独立仓库，例如 `monthly-settlement`。只上传**本目录内的程序文件**，包括隐藏目录 `.streamlit`；不要上传上级目录，也不要上传任何结算单、目标分析表或个人配置文件。
 2. 打开 [Streamlit Community Cloud](https://share.streamlit.io/)，登录并关联 GitHub。部署私有仓库时，按页面要求授权访问该仓库。
 3. 在对应 GitHub 用户的工作区点击 **Create app**，选择已有代码，填写仓库、分支以及入口 `streamlit_app.py`。
-4. 在 **Advanced settings** 中选择 Python **3.12**，保存后部署。本程序不需要配置 API 密钥或 Secrets。部署成功后平台会提供一个 `streamlit.app` 地址。[官方部署步骤](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/deploy)
+4. 在 **Advanced settings** 中选择 Python **3.14**，保存后部署。本程序不需要配置 API 密钥或 Secrets。部署成功后平台会提供一个 `streamlit.app` 地址。[官方部署步骤](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/deploy)
 5. 在应用设置的 **Sharing** 中选择 **Only specific people can view this app**，再添加需要访问的邮箱。私有仓库部署的应用默认私有，公共仓库部署的应用默认公开；应用是否公开可在此单独调整。Community Cloud 当前每次允许一个私有应用。[官方访问权限说明](https://docs.streamlit.io/deploy/streamlit-community-cloud/share-your-app)
 
 仓库中的 `.gitignore` 已排除 Excel、导入结果和密钥文件。网页上传 GitHub 文件时仍需自行确认选择的是代码文件。本程序无需把业务数据写入仓库。
