@@ -1,0 +1,30 @@
+# Monthly statements and generated workbooks stay outside the source repository.
+*.xlsx
+*.xls
+*.xlsm
+*.zip
+*.csv
+*.tsv
+*.log
+uploads/
+outputs/
+backups/
+logs/
+tmp/
+temp/
+.analysis/
+
+# Local environments and credentials.
+.streamlit/secrets.toml
+settings.json
+.env
+.env.*
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+.DS_Store
+Thumbs.db
