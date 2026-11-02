@@ -272,7 +272,15 @@ class CloudWorkbookTests(unittest.TestCase):
         self.assertTrue(zipfile.is_zipfile(io.BytesIO(result["workbook_bytes"])))
         self.assertTrue(zipfile.is_zipfile(io.BytesIO(result["bundle_bytes"])))
         self.assertEqual(result["fingerprint"], plan["fingerprint"])
-        json.loads(result["report_json"].decode("utf-8-sig"))
+        report = json.loads(result["report_json"].decode("utf-8-sig"))
+        self.assertTrue(report["completed"].endswith("+08:00"))
+        date = report["completed"][:10].replace("-", "")
+        result_name = f"2026年月度电价分析表-{date}更新"
+        self.assertEqual(result["workbook_name"], result_name + ".xlsx")
+        self.assertEqual(result["bundle_name"], result_name + ".zip")
+        self.assertEqual(report["output"], result["workbook_name"])
+        with zipfile.ZipFile(io.BytesIO(result["bundle_bytes"])) as archive:
+            self.assertEqual(archive.read(result["workbook_name"]), result["workbook_bytes"])
         self.assertIn("月份", result["report_csv"].decode("utf-8-sig"))
         again = self.service.preview_update(upload(result["workbook_name"], result["workbook_bytes"]), self.sources)
         self.assertFalse(again["errors"], again["errors"])
