@@ -181,7 +181,7 @@ def main():
     with st.sidebar:
         st.subheader("月度结算助手")
         st.caption("2026年月度电价分析")
-        st.markdown("1. 上传最新目标表和结算单\n2. 补充当月数据并预览\n3. 生成文件并下载保留")
+        st.markdown("1. 上传上一版月度电价分析表和结算单\n2. 补充当月数据并预览\n3. 生成文件并下载保留")
         st.divider()
         st.caption("每月都使用上次下载的最新版目标表。上传内容仅在本次会话中处理，完成后请下载保存。")
         st.button("清空本次会话", on_click=clear_session, width="stretch")
@@ -193,7 +193,7 @@ def main():
     target_column, sources_column = st.columns(2)
     with target_column:
         target_file = st.file_uploader(
-            "1. 上传最新目标分析表", type=["xlsx"], key=f"target_upload_{epoch}",
+            "1. 上传上一版月度电价分析表", type=["xlsx"], key=f"target_upload_{epoch}",
             help="使用2026年月度电价分析表；从第二次更新开始，上传上次下载的新版。", on_change=uploads_changed,
         )
     with sources_column:
