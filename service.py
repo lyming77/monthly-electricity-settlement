@@ -22,6 +22,7 @@ import xml.etree.ElementTree as ET
 import zipfile
 
 import core
+from change_log import append_change_log
 
 
 class Upload(TypedDict):
@@ -296,6 +297,10 @@ def generate_update(target: Upload, sources: list[Upload], supplements=None, exp
         public.update({'fingerprint': fingerprint, 'output': workbook_name,
                        'backup': backup_name, 'warnings': warnings,
                        'completed': completed.isoformat(timespec='seconds')})
+        try:
+            workbook_bytes = append_change_log(workbook_bytes, public['changes'], completed)
+        except (ValueError, KeyError, ET.ParseError, zipfile.BadZipFile) as exc:
+            raise ValueError(_sanitize('未能写入Excel变更明细：' + str(exc), labels)) from None
         report_json = json.dumps(public, ensure_ascii=False, indent=2).encode('utf-8')
         report_csv = _csv_bytes(public['changes'])
         bundle = io.BytesIO()
@@ -307,4 +312,4 @@ def generate_update(target: Upload, sources: list[Upload], supplements=None, exp
         return {'fingerprint': fingerprint, 'workbook_bytes': workbook_bytes,
                 'workbook_name': workbook_name, 'report_json': report_json, 'report_csv': report_csv,
                 'bundle_bytes': bundle.getvalue(), 'bundle_name': result_name + '.zip',
-                'summary': plan['summary'], 'warnings': warnings}
+                'summary': plan['summary'], 'warnings': warnings, 'change_log_embedded': True}
