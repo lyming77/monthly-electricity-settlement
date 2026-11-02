@@ -40,6 +40,7 @@ class StreamlitUITests(unittest.TestCase):
         self.assertFalse(app.exception)
         self.assertEqual(app.title[0].value, "月度结算数据汇总")
         self.assertEqual(len(app.file_uploader), 2)
+        self.assertEqual(app.file_uploader(key="target_upload_0").label, "1. 上传上一版月度电价分析表")
         self.assertTrue(button_named(app, "分析并预览").disabled)
         self.assertTrue(button_named(app, "生成更新后的Excel").disabled)
 
