@@ -142,29 +142,25 @@ def render_plan(plan):
 
 
 def render_downloads(result):
+    if not result.get("change_log_embedded"):
+        st.info("下载功能已更新，请重新点击“生成更新后的Excel”，将变更明细一并保存到分析表。")
+        return
     count = result.get("summary", {}).get("changed_cells", 0)
     if count:
         st.success(f"已生成更新文件，共更新 {count:,} 个单元格。下载后请保留，作为下个月的目标表。")
     else:
         st.success("已生成下载文件。数据与目标表一致，本次没有新增变更。")
-    columns = st.columns(2)
-    with columns[0]:
+    st.download_button(
+        "下载月度电价分析表（含变更明细）", data=result["workbook_bytes"], file_name=result["workbook_name"],
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        type="primary", on_click="ignore", width="stretch",
+    )
+    st.caption("变更明细已写入Excel的“变更明细”工作表，按更新日期保留历史记录。每月保存这一份分析表即可。")
+    with st.expander("下载完整备份（可选）"):
         st.download_button(
-            "下载更新后的 Excel", data=result["workbook_bytes"], file_name=result["workbook_name"],
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            type="primary", on_click="ignore", width="stretch",
-        )
-    with columns[1]:
-        st.download_button(
-            "下载 Excel 和报告压缩包", data=result["bundle_bytes"], file_name=result["bundle_name"],
+            "下载含原表备份的压缩包", data=result["bundle_bytes"], file_name=result["bundle_name"],
             mime="application/zip", on_click="ignore", width="stretch",
         )
-    with st.expander("单独下载检查报告"):
-        report_columns = st.columns(2)
-        with report_columns[0]:
-            st.download_button("下载 CSV 变更明细", result["report_csv"], file_name="结算更新明细.csv", mime="text/csv", on_click="ignore")
-        with report_columns[1]:
-            st.download_button("下载 JSON 完整报告", result["report_json"], file_name="结算更新报告.json", mime="application/json", on_click="ignore")
     if result.get("warnings"):
         with st.expander("生成结果提示"):
             for warning in result["warnings"]:
@@ -188,7 +184,7 @@ def main():
 
     st.title("月度结算数据汇总")
     st.write("导入结算单，核对差异后更新现有电价分析表。")
-    st.caption("浏览器会提供新版文件供你下载，电脑中的原文件不会被直接覆盖。")
+    st.caption("下载的分析表内含“变更明细”工作表，随每月更新保留历史记录。浏览器提供新版文件，电脑中的原文件不会被直接覆盖。")
 
     target_column, sources_column = st.columns(2)
     with target_column:
