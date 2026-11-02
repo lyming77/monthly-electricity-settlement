@@ -286,14 +286,16 @@ def generate_update(target: Upload, sources: list[Upload], supplements=None, exp
             raise ValueError(_sanitize('未能生成分析表：' + str(exc), labels)) from None
         workbook_bytes = Path(applied['output']).read_bytes()
         name = Path(uploaded['name']).stem[:100]
-        workbook_name = name + '_更新后.xlsx'
+        completed = datetime.now(timezone(timedelta(hours=8)))
+        result_name = f'2026年月度电价分析表-{completed:%Y%m%d}更新'
+        workbook_name = result_name + '.xlsx'
         backup_name = name + '_更新前备份.xlsx'
         labels.update({str(output): workbook_name, str(base): '本次会话'})
         public = _sanitize(plan, labels)
         warnings = _sanitize(applied.get('warnings', []), labels)
         public.update({'fingerprint': fingerprint, 'output': workbook_name,
                        'backup': backup_name, 'warnings': warnings,
-                       'completed': datetime.now(timezone(timedelta(hours=8))).isoformat(timespec='seconds')})
+                       'completed': completed.isoformat(timespec='seconds')})
         report_json = json.dumps(public, ensure_ascii=False, indent=2).encode('utf-8')
         report_csv = _csv_bytes(public['changes'])
         bundle = io.BytesIO()
@@ -304,5 +306,5 @@ def generate_update(target: Upload, sources: list[Upload], supplements=None, exp
             z.writestr('变更明细.csv', report_csv)
         return {'fingerprint': fingerprint, 'workbook_bytes': workbook_bytes,
                 'workbook_name': workbook_name, 'report_json': report_json, 'report_csv': report_csv,
-                'bundle_bytes': bundle.getvalue(), 'bundle_name': name + '_更新结果.zip',
+                'bundle_bytes': bundle.getvalue(), 'bundle_name': result_name + '.zip',
                 'summary': plan['summary'], 'warnings': warnings}
