@@ -272,6 +272,10 @@ class CloudWorkbookTests(unittest.TestCase):
         self.assertTrue(zipfile.is_zipfile(io.BytesIO(result["workbook_bytes"])))
         self.assertTrue(zipfile.is_zipfile(io.BytesIO(result["bundle_bytes"])))
         self.assertEqual(result["fingerprint"], plan["fingerprint"])
+        self.assertTrue(result["change_log_embedded"])
+        from test_change_log import sheets, log_data_rows
+        history = log_data_rows(sheets(result["workbook_bytes"])["变更明细"][1])
+        self.assertEqual(len(history), len(plan["changes"]))
         report = json.loads(result["report_json"].decode("utf-8-sig"))
         self.assertTrue(report["completed"].endswith("+08:00"))
         date = report["completed"][:10].replace("-", "")
@@ -285,18 +289,28 @@ class CloudWorkbookTests(unittest.TestCase):
         again = self.service.preview_update(upload(result["workbook_name"], result["workbook_bytes"]), self.sources)
         self.assertFalse(again["errors"], again["errors"])
         self.assertEqual(again["summary"]["changed_cells"], 0)
+        unchanged = self.service.generate_update(
+            upload(result["workbook_name"], result["workbook_bytes"]), self.sources, None, again["fingerprint"])
+        self.assertEqual(unchanged["workbook_bytes"], result["workbook_bytes"])
 
     def test_new_october_requires_inputs_then_generates(self):
+        from change_log import append_change_log
+        from test_change_log import COMPLETED, CHANGE, sheets, log_data_rows, row_values
+        target = upload(self.target["name"], append_change_log(self.target["data"], [CHANGE], COMPLETED))
+        original_history = row_values(log_data_rows(sheets(target["data"])["变更明细"][1])[0])
         sources = [upload(item["name"].replace("2026-09", "2026-10"), month10_copy(item["data"])) for item in self.sources]
-        missing = self.service.preview_update(self.target, sources)
+        missing = self.service.preview_update(target, sources)
         self.assertTrue(missing["errors"])
         with self.assertRaises(ValueError):
-            self.service.generate_update(self.target, sources, None, missing["fingerprint"])
+            self.service.generate_update(target, sources, None, missing["fingerprint"])
         inputs = {10: {"风电": 350.1, "光伏": 280.2, "分布式电量": 0, "分布式电费": 0}}
-        plan = self.service.preview_update(self.target, sources, inputs)
+        plan = self.service.preview_update(target, sources, inputs)
         self.assertFalse(plan["errors"], plan["errors"])
         self.assertEqual(plan["summary"]["new_rows"], 21)
-        result = self.service.generate_update(self.target, sources, inputs, plan["fingerprint"])
+        result = self.service.generate_update(target, sources, inputs, plan["fingerprint"])
+        history = log_data_rows(sheets(result["workbook_bytes"])["变更明细"][1])
+        self.assertEqual(len(history), len(plan["changes"]) + 1)
+        self.assertEqual(row_values(history[0]), original_history)
         again = self.service.preview_update(upload(result["workbook_name"], result["workbook_bytes"]), sources, inputs)
         self.assertFalse(again["errors"], again["errors"])
         self.assertEqual(again["summary"]["new_rows"], 0)
