@@ -102,8 +102,10 @@ for error in errors:
         self.assertEqual(len(app.metric), 4)
         button_named(app, "生成更新后的Excel").click().run()
         self.assertFalse(app.exception)
-        self.assertEqual(len(app.download_button), 4)
+        self.assertEqual(len(app.download_button), 2)
+        self.assertIn("下载月度电价分析表（含变更明细）", [button.label for button in app.download_button])
         result = app.session_state["result"]
+        self.assertTrue(result["change_log_embedded"])
         self.assertTrue(zipfile.is_zipfile(io.BytesIO(result["workbook_bytes"])))
         self.assertTrue(zipfile.is_zipfile(io.BytesIO(result["bundle_bytes"])))
         app.text_input(key="supplement_0_9_风电").set_value("301").run()
